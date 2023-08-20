@@ -1,13 +1,15 @@
 package main
 
 import (
-	"fmt"
+	"github.com/meihern/go_learning/api"
 )
 
 func main() {
 	
-	listenAddr:= ":3000"
+	listenAddr := ":3000"
 
-	fmt.Println("Server is running on " + listenAddr)
+	s := api.NewAPIServer(listenAddr)
+
+	s.Run()
 
 }
