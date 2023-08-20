@@ -1,8 +1,8 @@
 build:
-	go build -o ./bin/bank_rest_api
+	@go build -o ./bin/bank_rest_api
 
 run: build
-	./bin/bank_rest_api
+	@./bin/bank_rest_api
 
 test:
-	go test -v ./...
+	@go test -v ./...
