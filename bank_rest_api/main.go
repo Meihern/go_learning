@@ -1,7 +1,13 @@
 package main
 
-import "fmt"
+import (
+	"fmt"
+)
 
 func main() {
-	fmt.Println("Bank Rest Api !")
+	
+	listenAddr:= ":3000"
+
+	fmt.Println("Server is running on " + listenAddr)
+
 }
