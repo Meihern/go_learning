@@ -67,7 +67,25 @@ func (s *PostgresStore) GetAccountByID(uuid.UUID) (*types.Account, error) {
 
 }
 
-func (s *PostgresStore) CreateAccount(*types.Account) error {
+func (s *PostgresStore) CreateAccount(account *types.Account) error {
+	query := `INSERT INTO accounts
+	(id, first_name, last_name, number, balance, created_at) 
+	values
+	($1, $2, $3, $4, $5, $6)`
+
+	_, err := s.db.Query(
+		query,
+		account.ID,
+		account.FirstName,
+		account.LastName,
+		account.Number,
+		account.Balance,
+		account.CreatedAt)
+
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
 
