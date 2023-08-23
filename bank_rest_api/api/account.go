@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"github.com/gorilla/mux"
+	"github.com/meihern/go_learning/types"
 )
 
 func (s *APIServer) registerHandlerAccounts(router *mux.Router) {
@@ -46,7 +47,6 @@ func (s *APIServer) handleAccountsWithID(w http.ResponseWriter, r *http.Request)
 
 func (s *APIServer) handleGetAccounts(w http.ResponseWriter, r *http.Request) error {
 	return nil
-
 }
 
 func (s *APIServer) handleCreateAccount(w http.ResponseWriter, r *http.Request) error {
@@ -54,7 +54,13 @@ func (s *APIServer) handleCreateAccount(w http.ResponseWriter, r *http.Request) 
 }
 
 func (s *APIServer) handleGetAccount(w http.ResponseWriter, r *http.Request) error {
-	return nil
+	
+	account := types.NewAccount("Youssef", "Achir")
+
+	fmt.Println(GetIDFromRequest(r))
+
+	return WriteJson(w, http.StatusOK, account)
+
 }
 
 func (s *APIServer) handleUpdateAccount(w http.ResponseWriter, r *http.Request) error {
@@ -68,3 +74,4 @@ func (s *APIServer) handleDeleteAccount(w http.ResponseWriter, r *http.Request) 
 func (s *APIServer) handleTransfer(w http.ResponseWriter, r *http.Request) error {
 	return nil
 }
+

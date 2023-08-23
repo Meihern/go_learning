@@ -2,17 +2,35 @@ package api
 
 import (
 	"encoding/json"
+	"fmt"
 	"log"
 	"net/http"
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/gorilla/mux"
 )
 
 func WriteJson(w http.ResponseWriter, status int, v any) error {
-	w.WriteHeader(status)
 	w.Header().Add("Content-Type", "application/json")
+	w.WriteHeader(status)
 	return json.NewEncoder(w).Encode(v)
+}
+
+func GetIDFromRequest(r *http.Request) (*uuid.UUID, error) {
+
+	id := mux.Vars(r)["id"]
+
+	if uuid, err := uuid.Parse(id); err != nil {
+
+			return nil, fmt.Errorf("Invalid ID: %s", id)
+
+	} else {
+
+		return &uuid, nil
+
+	}
+
 }
 
 type ApiError struct {
@@ -25,7 +43,7 @@ type apiFunc func(http.ResponseWriter, *http.Request) error
 func MakeHTTPHandleFunc(f apiFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		if err := f(w, r); err != nil {
-			WriteJson(w, http.StatusBadRequest, ApiError{Error: err.Error(), TimeStamp: time.Now()})
+			WriteJson(w, http.StatusBadRequest, ApiError{Error: err.Error(), TimeStamp: time.Now().In(time.UTC)})
 		}
 	}
 }
