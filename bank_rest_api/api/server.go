@@ -9,6 +9,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/gorilla/mux"
+	_"github.com/lib/pq"
 	"github.com/meihern/go_learning/storage"
 )
 

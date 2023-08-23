@@ -6,18 +6,25 @@ import (
 
 	"github.com/joho/godotenv"
 	"github.com/meihern/go_learning/api"
+	"github.com/meihern/go_learning/storage"
 )
 
 func main() {
-	
+
 	err := godotenv.Load(".env")
 
 	if err != nil {
-		log.Fatalf("Error loading .env file")
+		log.Fatalf(err.Error())
 	}
 
-	s := api.NewAPIServer(os.Getenv("LISTEN_ADDRESS"), nil)
+	store, err := storage.NewPostgresStore()
 
-	s.Run()
+	if err != nil {
+		log.Fatalf(err.Error())
+	}
+
+	server := api.NewAPIServer(os.Getenv("LISTEN_ADDRESS"), store)
+
+	server.Run()
 
 }
