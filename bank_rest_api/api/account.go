@@ -23,7 +23,7 @@ func (s *APIServer) handleAccounts(w http.ResponseWriter, r *http.Request) error
 		return s.handleGetAccounts(w, r)
 	}
 
-	if r.Method ==  "POST" {
+	if r.Method == "POST" {
 		return s.handleCreateAccount(w, r)
 	}
 
@@ -41,13 +41,18 @@ func (s *APIServer) handleAccountsWithID(w http.ResponseWriter, r *http.Request)
 	case "DELETE":
 		return s.handleDeleteAccount(w, r)
 	default:
-		 return fmt.Errorf("method not allowed %s", m)
+		return fmt.Errorf("method not allowed %s", m)
 	}
 
 }
 
 func (s *APIServer) handleGetAccounts(w http.ResponseWriter, r *http.Request) error {
-	return nil
+	accounts, err := s.store.GetAccounts()
+	if err != nil {
+		return err
+	}
+
+	return WriteJson(w, http.StatusOK, accounts)
 }
 
 func (s *APIServer) handleCreateAccount(w http.ResponseWriter, r *http.Request) error {
@@ -65,7 +70,7 @@ func (s *APIServer) handleCreateAccount(w http.ResponseWriter, r *http.Request) 
 }
 
 func (s *APIServer) handleGetAccount(w http.ResponseWriter, r *http.Request) error {
-	
+
 	account := types.NewAccount("Youssef", "Achir")
 
 	fmt.Println(GetIDFromRequest(r))
@@ -85,4 +90,3 @@ func (s *APIServer) handleDeleteAccount(w http.ResponseWriter, r *http.Request) 
 func (s *APIServer) handleTransfer(w http.ResponseWriter, r *http.Request) error {
 	return nil
 }
-

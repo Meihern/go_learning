@@ -9,6 +9,7 @@ import (
 )
 
 type Storage interface {
+	GetAccounts() ([]*types.Account, error)
 	GetAccountByID(uuid.UUID) (*types.Account, error)
 	CreateAccount(*types.Account) error
 	UpdateAccount(*types.Account) error
@@ -61,6 +62,38 @@ func (s *PostgresStore) createAccountTable() error {
 	return err
 }
 
+func (s *PostgresStore) GetAccounts() ([]*types.Account, error) {
+	query := `SELECT * FROM accounts`
+
+	rows, err := s.db.Query(query)
+	if err != nil {
+		return nil, err
+	}
+
+	accounts := []*types.Account{}
+	for rows.Next() {
+		account := new(types.Account)
+		err := rows.Scan(
+			&account.ID,
+			&account.FirstName,
+			&account.LastName,
+			&account.Number,
+			&account.Balance,
+			&account.CreatedAt,
+		)
+
+		if err != nil {
+			return nil, err
+		}
+
+		accounts = append(accounts, account)
+
+	}
+
+	return accounts, nil
+
+}
+
 func (s *PostgresStore) GetAccountByID(uuid.UUID) (*types.Account, error) {
 
 	return nil, nil
@@ -81,7 +114,6 @@ func (s *PostgresStore) CreateAccount(account *types.Account) error {
 		account.Number,
 		account.Balance,
 		account.CreatedAt)
-
 	if err != nil {
 		return err
 	}
