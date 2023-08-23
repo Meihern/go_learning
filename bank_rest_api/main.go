@@ -1,14 +1,22 @@
 package main
 
 import (
+	"log"
+	"os"
+
+	"github.com/joho/godotenv"
 	"github.com/meihern/go_learning/api"
 )
 
 func main() {
 	
-	listenAddr := ":3000"
+	err := godotenv.Load(".env")
 
-	s := api.NewAPIServer(listenAddr)
+	if err != nil {
+		log.Fatalf("Error loading .env file")
+	}
+
+	s := api.NewAPIServer(os.Getenv("LISTEN_ADDRESS"), nil)
 
 	s.Run()
 

@@ -9,6 +9,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/gorilla/mux"
+	"github.com/meihern/go_learning/storage"
 )
 
 func WriteJson(w http.ResponseWriter, status int, v any) error {
@@ -18,23 +19,18 @@ func WriteJson(w http.ResponseWriter, status int, v any) error {
 }
 
 func GetIDFromRequest(r *http.Request) (*uuid.UUID, error) {
-
 	id := mux.Vars(r)["id"]
 
 	if uuid, err := uuid.Parse(id); err != nil {
-
-			return nil, fmt.Errorf("Invalid ID: %s", id)
-
+		return nil, fmt.Errorf("Invalid ID: %s", id)
 	} else {
-
 		return &uuid, nil
-
 	}
-
+	
 }
 
 type ApiError struct {
-	Error string `json:"error"`
+	Error     string    `json:"error"`
 	TimeStamp time.Time `json:"timestamp"`
 }
 
@@ -50,11 +46,13 @@ func MakeHTTPHandleFunc(f apiFunc) http.HandlerFunc {
 
 type APIServer struct {
 	listenAddr string
+	store      storage.Storage
 }
 
-func NewAPIServer(listenAddr string) *APIServer {
+func NewAPIServer(listenAddr string, store storage.Storage) *APIServer {
 	return &APIServer{
 		listenAddr: listenAddr,
+		store:      store,
 	}
 }
 
