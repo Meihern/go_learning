@@ -7,6 +7,12 @@ import (
 	"github.com/google/uuid"
 )
 
+
+type CreateAccountRequest struct {
+	FirstName string `json:"firstName"`
+	LastName string `json:"lastName"`
+}
+
 type Account struct {
 	ID        uuid.UUID `json:"id"`
 	FirstName string    `json:"firstName"`

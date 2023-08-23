@@ -41,6 +41,25 @@ func NewPostgresStore() (*PostgresStore, error) {
 
 }
 
+func (s *PostgresStore) Init() error {
+
+	return s.createAccountTable()
+
+}
+
+func (s *PostgresStore) createAccountTable() error {
+	query := `CREATE TABLE IF NOT EXISTS accounts (
+			id UUID PRIMARY KEY,
+			first_name VARCHAR(50),
+			last_name VARCHAR(50),
+			number INTEGER UNIQUE,
+			balance FLOAT,
+			created_at TIMESTAMP
+		)`
+
+	_, err := s.db.Exec(query)
+	return err
+}
 
 func (s *PostgresStore) GetAccountByID(uuid.UUID) (*types.Account, error) {
 

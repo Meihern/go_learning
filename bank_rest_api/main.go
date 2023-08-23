@@ -23,6 +23,10 @@ func main() {
 		log.Fatalf(err.Error())
 	}
 
+	if err := store.Init(); err != nil {
+		log.Fatalf(err.Error())
+	}
+
 	server := api.NewAPIServer(os.Getenv("LISTEN_ADDRESS"), store)
 
 	server.Run()
