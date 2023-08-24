@@ -99,8 +99,6 @@ func (s *APIServer) handleUpdateAccount(w http.ResponseWriter, r *http.Request) 
 	if err := json.NewDecoder(r.Body).Decode(updateAccountReq); err != nil {
 		return err
 	}
-
-	defer r.Body.Close()
 	
 	account.FirstName = updateAccountReq.FirstName
 	account.LastName = updateAccountReq.LastName
@@ -120,7 +118,13 @@ func (s *APIServer) handleDeleteAccount(w http.ResponseWriter, r *http.Request) 
 		return err
 	}
 
-	return s.store.DeleteAccount(id)
+	
+	if err := s.store.DeleteAccount(id); err != nil {
+		return err
+	}
+
+	return WriteJson(w, http.StatusOK, map[string]string{"message": "Deleted Account: " + id.String()})
+
 }
 
 func (s *APIServer) handleTransfer(w http.ResponseWriter, r *http.Request) error {
