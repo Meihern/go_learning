@@ -71,9 +71,17 @@ func (s *APIServer) handleCreateAccount(w http.ResponseWriter, r *http.Request) 
 
 func (s *APIServer) handleGetAccount(w http.ResponseWriter, r *http.Request) error {
 
-	account := types.NewAccount("Youssef", "Achir")
+	id, err := GetIDFromRequest(r)
 
-	fmt.Println(GetIDFromRequest(r))
+	if err != nil {
+		return err
+	}
+
+	account, err := s.store.GetAccountByID(*id)
+	
+	if err != nil {
+		return err
+	}
 
 	return WriteJson(w, http.StatusOK, account)
 

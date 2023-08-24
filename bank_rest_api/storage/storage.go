@@ -94,9 +94,27 @@ func (s *PostgresStore) GetAccounts() ([]*types.Account, error) {
 
 }
 
-func (s *PostgresStore) GetAccountByID(uuid.UUID) (*types.Account, error) {
+func (s *PostgresStore) GetAccountByID(id uuid.UUID) (*types.Account, error) {
 
-	return nil, nil
+	query := `SELECT * FROM accounts WHERE id = $1`
+
+	row := s.db.QueryRow(query, id)
+
+	account := new(types.Account)
+	err := row.Scan(
+		&account.ID,
+		&account.FirstName,
+		&account.LastName,
+		&account.Number,
+		&account.Balance,
+		&account.CreatedAt,
+	)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return account, nil
 
 }
 
