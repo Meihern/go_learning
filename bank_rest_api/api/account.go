@@ -56,7 +56,7 @@ func (s *APIServer) handleGetAccounts(w http.ResponseWriter, r *http.Request) er
 }
 
 func (s *APIServer) handleCreateAccount(w http.ResponseWriter, r *http.Request) error {
-	createAccountReq := new(types.CreateAccountRequest)
+	createAccountReq := new(types.CreateOrUpdateAccountRequest)
 	if err := json.NewDecoder(r.Body).Decode(createAccountReq); err != nil {
 		return err
 	}
@@ -70,16 +70,36 @@ func (s *APIServer) handleCreateAccount(w http.ResponseWriter, r *http.Request) 
 }
 
 func (s *APIServer) handleGetAccount(w http.ResponseWriter, r *http.Request) error {
-
 	id, err := GetIDFromRequest(r)
-
 	if err != nil {
 		return err
 	}
 
-	account, err := s.store.GetAccountByID(*id)
-	
+	account, err := s.store.GetAccountByID(id)
 	if err != nil {
+		return err
+	}
+
+	return WriteJson(w, http.StatusOK, account)
+}
+
+func (s *APIServer) handleUpdateAccount(w http.ResponseWriter, r *http.Request) error {
+	id, err := GetIDFromRequest(r)
+	if err != nil {
+		return err
+	}
+
+	account, err := s.store.GetAccountByID(id)
+
+	updateAccountReq := new(types.CreateOrUpdateAccountRequest)
+	if err := json.NewDecoder(r.Body).Decode(updateAccountReq); err != nil {
+		return err
+	}
+
+	account.FirstName = updateAccountReq.FirstName
+	account.LastName = updateAccountReq.LastName
+
+	if err := s.store.UpdateAccount(account); err != nil {
 		return err
 	}
 
@@ -87,14 +107,19 @@ func (s *APIServer) handleGetAccount(w http.ResponseWriter, r *http.Request) err
 
 }
 
-func (s *APIServer) handleUpdateAccount(w http.ResponseWriter, r *http.Request) error {
-	return nil
-}
-
 func (s *APIServer) handleDeleteAccount(w http.ResponseWriter, r *http.Request) error {
-	return nil
+	id, err := GetIDFromRequest(r)
+	if err != nil {
+		return err
+	}
+
+	return s.store.DeleteAccount(id)
 }
 
 func (s *APIServer) handleTransfer(w http.ResponseWriter, r *http.Request) error {
+	if r.Method != "POST" {
+		return fmt.Errorf("method not allowed %s", r.Method)
+	}
+
 	return nil
 }

@@ -2,6 +2,7 @@ package storage
 
 import (
 	"database/sql"
+	"fmt"
 	"os"
 
 	"github.com/google/uuid"
@@ -109,9 +110,8 @@ func (s *PostgresStore) GetAccountByID(id uuid.UUID) (*types.Account, error) {
 		&account.Balance,
 		&account.CreatedAt,
 	)
-
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("Account %s not found", id)
 	}
 
 	return account, nil
@@ -139,14 +139,30 @@ func (s *PostgresStore) CreateAccount(account *types.Account) error {
 	return nil
 }
 
-func (s *PostgresStore) UpdateAccount(*types.Account) error {
+func (s *PostgresStore) UpdateAccount(account *types.Account) error {
+	query := `UPDATE accounts
+	SET first_name = $2, last_name = $3
+	WHERE id = $1`
+
+	_, err := s.db.Query(query,
+		account.ID,
+		account.FirstName,
+		account.LastName)
+	if err != nil {
+		return err
+	}
 
 	return nil
 
 }
 
-func (s *PostgresStore) DeleteAccount(uuid.UUID) error {
+func (s *PostgresStore) DeleteAccount(id uuid.UUID) error {
+	query := `DELETE FROM accounts where id = $1`
+
+	_, err := s.db.Query(query, id)
+	if err != nil {
+		return fmt.Errorf("Account %s not found", id)
+	}
 
 	return nil
-
 }

@@ -7,10 +7,9 @@ import (
 	"github.com/google/uuid"
 )
 
-
-type CreateAccountRequest struct {
+type CreateOrUpdateAccountRequest struct {
 	FirstName string `json:"firstName"`
-	LastName string `json:"lastName"`
+	LastName  string `json:"lastName"`
 }
 
 type Account struct {

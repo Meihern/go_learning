@@ -19,13 +19,13 @@ func WriteJson(w http.ResponseWriter, status int, v any) error {
 	return json.NewEncoder(w).Encode(v)
 }
 
-func GetIDFromRequest(r *http.Request) (*uuid.UUID, error) {
+func GetIDFromRequest(r *http.Request) (uuid.UUID, error) {
 	id := mux.Vars(r)["id"]
 
 	if uuid, err := uuid.Parse(id); err != nil {
-		return nil, fmt.Errorf("Invalid ID: %s", id)
+		return uuid, fmt.Errorf("Invalid ID: %s", id)
 	} else {
-		return &uuid, nil
+		return uuid, nil
 	}
 	
 }
