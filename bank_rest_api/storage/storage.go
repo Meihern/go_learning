@@ -56,10 +56,17 @@ func (s *PostgresStore) createAccountTable() error {
 			last_name VARCHAR(50),
 			number INTEGER UNIQUE,
 			balance FLOAT,
-			created_at TIMESTAMP
+			created_at TIMESTAMP,
+			updated_at TIMESTAMP
 		)`
+	if _, err := s.db.Exec(query); err != nil {
+		return err
+	}
 
+	query = `ALTER TABLE IF EXISTS accounts
+			ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP`
 	_, err := s.db.Exec(query)
+
 	return err
 }
 
@@ -73,22 +80,11 @@ func (s *PostgresStore) GetAccounts() ([]*types.Account, error) {
 
 	accounts := []*types.Account{}
 	for rows.Next() {
-		account := new(types.Account)
-		err := rows.Scan(
-			&account.ID,
-			&account.FirstName,
-			&account.LastName,
-			&account.Number,
-			&account.Balance,
-			&account.CreatedAt,
-		)
-
+		account, err := scanIntoAccount(rows)
 		if err != nil {
 			return nil, err
 		}
-
 		accounts = append(accounts, account)
-
 	}
 
 	return accounts, nil
@@ -99,19 +95,32 @@ func (s *PostgresStore) GetAccountByID(id uuid.UUID) (*types.Account, error) {
 
 	query := `SELECT * FROM accounts WHERE id = $1`
 
-	row := s.db.QueryRow(query, id)
+	rows, err := s.db.Query(query, id)
+	if err != nil {
+		return nil, err
+	}
 
+	for rows.Next() {
+		return scanIntoAccount(rows)
+	}
+
+	return nil, fmt.Errorf("Account %s not found", id)
+
+}
+
+func scanIntoAccount(rows *sql.Rows) (*types.Account, error) {
 	account := new(types.Account)
-	err := row.Scan(
+	err := rows.Scan(
 		&account.ID,
 		&account.FirstName,
 		&account.LastName,
 		&account.Number,
 		&account.Balance,
 		&account.CreatedAt,
+		&account.UpdatedAt,
 	)
 	if err != nil {
-		return nil, fmt.Errorf("Account %s not found", id)
+		return nil, err
 	}
 
 	return account, nil
@@ -120,9 +129,9 @@ func (s *PostgresStore) GetAccountByID(id uuid.UUID) (*types.Account, error) {
 
 func (s *PostgresStore) CreateAccount(account *types.Account) error {
 	query := `INSERT INTO accounts
-	(id, first_name, last_name, number, balance, created_at) 
+	(id, first_name, last_name, number, balance, created_at, updated_at) 
 	values
-	($1, $2, $3, $4, $5, $6)`
+	($1, $2, $3, $4, $5, $6, $7)`
 
 	_, err := s.db.Query(
 		query,
@@ -131,7 +140,8 @@ func (s *PostgresStore) CreateAccount(account *types.Account) error {
 		account.LastName,
 		account.Number,
 		account.Balance,
-		account.CreatedAt)
+		account.CreatedAt,
+		account.UpdatedAt)
 	if err != nil {
 		return err
 	}
@@ -141,13 +151,14 @@ func (s *PostgresStore) CreateAccount(account *types.Account) error {
 
 func (s *PostgresStore) UpdateAccount(account *types.Account) error {
 	query := `UPDATE accounts
-	SET first_name = $2, last_name = $3
+	SET first_name = $2, last_name = $3, updated_at = $4
 	WHERE id = $1`
 
 	_, err := s.db.Query(query,
 		account.ID,
 		account.FirstName,
-		account.LastName)
+		account.LastName,
+		account.UpdatedAt)
 	if err != nil {
 		return err
 	}

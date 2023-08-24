@@ -19,6 +19,7 @@ type Account struct {
 	Number    int64     `json:"number"`
 	Balance   float64   `json:"balance"`
 	CreatedAt time.Time `json:"createdAt"`
+	UpdatedAt time.Time `json:"updatedAt"`
 }
 
 func NewAccount(firstName, lastName string) *Account {
@@ -28,5 +29,6 @@ func NewAccount(firstName, lastName string) *Account {
 		LastName:  lastName,
 		Number:    int64(rand.Intn(1000000)),
 		CreatedAt: time.Now().In(time.UTC),
+		UpdatedAt: time.Now().In(time.UTC),
 	}
 }

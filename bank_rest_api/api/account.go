@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"time"
 
 	"github.com/gorilla/mux"
 	"github.com/meihern/go_learning/types"
@@ -90,14 +91,20 @@ func (s *APIServer) handleUpdateAccount(w http.ResponseWriter, r *http.Request) 
 	}
 
 	account, err := s.store.GetAccountByID(id)
+	if err != nil {
+		return err
+	}
 
 	updateAccountReq := new(types.CreateOrUpdateAccountRequest)
 	if err := json.NewDecoder(r.Body).Decode(updateAccountReq); err != nil {
 		return err
 	}
 
+	defer r.Body.Close()
+	
 	account.FirstName = updateAccountReq.FirstName
 	account.LastName = updateAccountReq.LastName
+	account.UpdatedAt = time.Now().In(time.UTC)
 
 	if err := s.store.UpdateAccount(account); err != nil {
 		return err
