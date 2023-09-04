@@ -12,9 +12,9 @@ import (
 
 func (s *APIServer) registerHandlerAccounts(router *mux.Router) {
 
-	router.HandleFunc("/accounts", MakeHTTPHandleFunc(s.handleAccounts))
-	router.HandleFunc("/accounts/{id}", MakeHTTPHandleFunc(s.handleAccountsWithID))
-	router.HandleFunc("/accounts/{id}/transfer", MakeHTTPHandleFunc(s.handleTransfer))
+	router.HandleFunc("/accounts", makeHTTPHandleFunc(s.handleAccounts))
+	router.HandleFunc("/accounts/{id}", withJWTAuth(makeHTTPHandleFunc(s.handleAccountsWithID)))
+	router.HandleFunc("/accounts/{id}/transfer", makeHTTPHandleFunc(s.handleTransfer))
 
 }
 
@@ -53,7 +53,7 @@ func (s *APIServer) handleGetAccounts(w http.ResponseWriter, r *http.Request) er
 		return err
 	}
 
-	return WriteJson(w, http.StatusOK, accounts)
+	return writeJson(w, http.StatusOK, accounts)
 }
 
 func (s *APIServer) handleCreateAccount(w http.ResponseWriter, r *http.Request) error {
@@ -67,11 +67,19 @@ func (s *APIServer) handleCreateAccount(w http.ResponseWriter, r *http.Request) 
 		return err
 	}
 
-	return WriteJson(w, http.StatusCreated, account)
+	token, err := createJWT(account.ID.String())
+
+	if err != nil {
+		return err
+	}
+
+	fmt.Println("JWT TOKEN : ", token)
+
+	return writeJson(w, http.StatusCreated, account)
 }
 
 func (s *APIServer) handleGetAccount(w http.ResponseWriter, r *http.Request) error {
-	id, err := GetIDFromRequest(r)
+	id, err := getIDFromRequest(r)
 	if err != nil {
 		return err
 	}
@@ -81,11 +89,11 @@ func (s *APIServer) handleGetAccount(w http.ResponseWriter, r *http.Request) err
 		return err
 	}
 
-	return WriteJson(w, http.StatusOK, account)
+	return writeJson(w, http.StatusOK, account)
 }
 
 func (s *APIServer) handleUpdateAccount(w http.ResponseWriter, r *http.Request) error {
-	id, err := GetIDFromRequest(r)
+	id, err := getIDFromRequest(r)
 	if err != nil {
 		return err
 	}
@@ -99,7 +107,7 @@ func (s *APIServer) handleUpdateAccount(w http.ResponseWriter, r *http.Request) 
 	if err := json.NewDecoder(r.Body).Decode(updateAccountReq); err != nil {
 		return err
 	}
-	
+
 	account.FirstName = updateAccountReq.FirstName
 	account.LastName = updateAccountReq.LastName
 	account.UpdatedAt = time.Now().In(time.UTC)
@@ -108,22 +116,21 @@ func (s *APIServer) handleUpdateAccount(w http.ResponseWriter, r *http.Request) 
 		return err
 	}
 
-	return WriteJson(w, http.StatusOK, account)
+	return writeJson(w, http.StatusOK, account)
 
 }
 
 func (s *APIServer) handleDeleteAccount(w http.ResponseWriter, r *http.Request) error {
-	id, err := GetIDFromRequest(r)
+	id, err := getIDFromRequest(r)
 	if err != nil {
 		return err
 	}
 
-	
 	if err := s.store.DeleteAccount(id); err != nil {
 		return err
 	}
 
-	return WriteJson(w, http.StatusOK, map[string]string{"message": "Deleted Account: " + id.String()})
+	return writeJson(w, http.StatusOK, map[string]string{"message": "Deleted Account: " + id.String()})
 
 }
 
